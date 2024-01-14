@@ -1,6 +1,6 @@
 import pandas as pd
 from fpdf import FPDF
-from tkinter import filedialog, Tk
+from tkinter import filedialog, Tk, messagebox
 
 PG_WDTH = 188
 
@@ -10,7 +10,6 @@ pd.set_option('display.width', 350)
 pd.set_option('max_colwidth', 40)
 
 class PDF(FPDF):
-    # TODO: Add Work order to header (and footer)
     op_title = ""
     bom_number = 0
 
@@ -81,7 +80,6 @@ def write_op_pdf(df, mat_dict, op, pdf):
 
         mat_df = df.loc[df["Material NO"] == mat].sort_values(by=['ID'])
         for i, row in mat_df.iterrows():
-            # TODO: include part dimensions
             uom = row['UOM']
             next_op = row['op2'] if not pd.isna(row['op2']) else 'N/A'
             pdf.cell(PG_WDTH/8, 21, f"{san(row['Qty'])}x  ", border = 1, ln = 0, align='R')
@@ -120,17 +118,13 @@ if __name__ == "__main__":
     wj_mat_dict = gen_mat_dict(wj_df)
 
     pdf = PDF()
-    pdf.bom_number = file_path.split('/')[-1].split('.')[0] 
+    pdf.bom_number = file_path.split('/')[-1].split('.')[0]
 
     pdf.alias_nb_pages()
 
-    # material table at top
     write_op_pdf(saw_df, saw_mat_dict, "Saw", pdf)
     write_op_pdf(laser_df, laser_mat_dict, "Laser", pdf)
     write_op_pdf(wj_df, wj_mat_dict, "Water Jet", pdf)
 
     pdf.output(f"/users/brendan/Downloads/{pdf.bom_number}-opsheet.pdf", 'F')
-
-
-
-
+    messagebox.showinfo("Create Opsheet", f"Success!\nWrote pdf to \ndownloads/{pdf.bom_number}-opsheet.pdf")
