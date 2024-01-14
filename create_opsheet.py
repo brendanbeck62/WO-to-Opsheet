@@ -50,6 +50,10 @@ def gen_mat_dict(df):
         mat_dict[row['Material NO']] = (old_tup[0] + len, old_tup[1] + wid)
     return mat_dict
 
+def san(string):
+    string = str(string)
+    return string.encode('latin-1', 'replace').decode('latin-1')
+
 def write_op_pdf(df, mat_dict, op, pdf):
 
     pdf.set_title(op)
@@ -72,7 +76,7 @@ def write_op_pdf(df, mat_dict, op, pdf):
         mat_desc = df[df['Material NO'] == mat]['Material Description'].head(1).to_string(index=False)
         pdf.set_font('Times', 'B', 12)
         pdf.ln(5)
-        pdf.cell(0, 10, f"{mat} : {mat_desc}", ln=1)
+        pdf.cell(0, 10, f"{san(mat)} : {san(mat_desc)}", ln=1)
         pdf.set_font('Times', '', 12)
 
         mat_df = df.loc[df["Material NO"] == mat].sort_values(by=['ID'])
@@ -80,8 +84,8 @@ def write_op_pdf(df, mat_dict, op, pdf):
             # TODO: include part dimensions
             uom = row['UOM']
             next_op = row['op2'] if not pd.isna(row['op2']) else 'N/A'
-            pdf.cell(PG_WDTH/8, 21, f"{row['Qty']}x  ", border = 1, ln = 0, align='R')
-            pdf.multi_cell(PG_WDTH-PG_WDTH/8, 7, f"{row['ID']} : {row['Description']}\n"\
+            pdf.cell(PG_WDTH/8, 21, f"{san(row['Qty'])}x  ", border = 1, ln = 0, align='R')
+            pdf.multi_cell(PG_WDTH-PG_WDTH/8, 7, f"{san(row['ID'])} : {san(row['Description'])}\n"\
                            f"Dimensions: {row['Length']:.2f} x {row['Width']:.2f} "\
                            f"({row['Length']*row['Width']:.2f}) {uom}\n"\
                            f"Next Op: {next_op}", border = 1)
