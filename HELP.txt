@@ -1,0 +1,8 @@
+create_opsheet.exe usage:
+
+This .exe is self contained, and can live anywhere on your system (Desktop, in a folder, etc.)
+
+After double clicking, a file browswer will pop up. Navigate to the xlsx file you wish to convert to an op sheet, and click "open".
+
+After a second, a popup will appear saying that a pdf file has been written to your downloads. It will match the xlsx's file name, with "-opsheet" appended to the file name.
+
