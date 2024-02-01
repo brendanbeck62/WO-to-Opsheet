@@ -62,13 +62,18 @@ def write_op_pdf(df, mat_dict, op, pdf):
     #pdf.cell(0, 10, "Materials:", ln=1)
     pdf.set_font('Times', '', 12)
     # material table
-    #for mat, dims in sorted(mat_dict.items()):
-    #    mat_desc = df[df['Material NO'] == mat]['Material Description'].head(1).to_string(index=False)
-    #    uom = df[df['Material NO'] == mat]['UOM'].head(1).to_string(index=False)
-    #    pdf.cell(PG_WDTH/6, 10, f"{mat}", border = 1, ln = 0)
-    #    pdf.cell(PG_WDTH/2, 10, f"{mat_desc}", border = 1, ln = 0)
-    #    pdf.cell(PG_WDTH/3, 10, f"{dims[0]:.2f}x{dims[1]:.2f} ({dims[0]*dims[1]:.2f}) {uom}", border = 1, ln = 1)
-    #pdf.ln(10)
+    for mat, dims in sorted(mat_dict.items()):
+        mat_desc = df[df['Material NO'] == mat]['Material Description'].head(1).to_string(index=False)
+        uom = df[df['Material NO'] == mat]['UOM'].head(1).to_string(index=False)
+        if (uom == "FT"):
+            pdf.cell(PG_WDTH/6, 10, f"{san(mat)}", border = 1, ln = 0)
+            pdf.cell(PG_WDTH/2, 10, f"{san(mat_desc)}", border = 1, ln = 0)
+            pdf.cell(PG_WDTH/3, 10, f"{dims[0]/12:.2f} {uom}", border = 1, ln = 1)
+        # only give material table for saw, summing the dims and then calculating SF isnt correct
+        #else:
+        #    pdf.cell(PG_WDTH/6, 10, f"{san(mat)}", border = 1, ln = 0)
+        #    pdf.cell(PG_WDTH/2, 10, f"{san(mat_desc)}", border = 1, ln = 0)
+        #    pdf.cell(PG_WDTH/3, 10, f"{dims[0]/12:.2f}x{dims[1]/12:.2f} ({(dims[0]/12)*(dims[1]/12):.2f}) {uom}", border = 1, ln = 1)
 
     # Op table
     for mat in sorted(mat_dict.keys()):
@@ -144,7 +149,7 @@ if __name__ == "__main__":
     write_op_pdf(saw_df, saw_mat_dict, "Saw", pdf)
     write_op_pdf(laser_df, laser_mat_dict, "Laser", pdf)
     write_op_pdf(wj_df, wj_mat_dict, "Water Jet", pdf)
-    write_op_pdf(swj_df, swj_mat_dict, "Sub Water Jet", pdf)
+    write_op_pdf(swj_df, swj_mat_dict, "Sub Water", pdf)
 
     pdf.output(f"/users/brendan/Downloads/{pdf.bom_number}-opsheet.pdf", 'F')
     messagebox.showinfo("Create Opsheet", f"Success!\nWrote pdf to \ndownloads/{pdf.bom_number}-opsheet.pdf")
