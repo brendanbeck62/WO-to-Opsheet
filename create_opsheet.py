@@ -82,11 +82,27 @@ def write_op_pdf(df, mat_dict, op, pdf):
         for i, row in mat_df.iterrows():
             uom = row['UOM']
             next_op = row['op2'] if not pd.isna(row['op2']) else 'N/A'
+
+            # Convert len and wid to feet, (right now values are in inches,
+                # but labels are feet (SF / F)
+            # This is because engineers work in inches, but stocking UOM is ft/sf.
+            length = row['Length']/12
+            width = row['Width']
+            if uom != "FT":
+                width = width/12
+
             pdf.cell(PG_WDTH/8, 21, f"{san(row['Qty'])}x  ", border = 1, ln = 0, align='R')
-            pdf.multi_cell(PG_WDTH-PG_WDTH/8, 7, f"{san(row['ID'])} : {san(row['Description'])}\n"\
-                           f"Dimensions: {row['Length']:.2f} x {row['Width']:.2f} "\
-                           f"({row['Length']*row['Width']:.2f}) {uom}\n"\
-                           f"Next Op: {next_op}", border = 1)
+
+            # seperate logic for saw (feet) and everythign else (sq feet).
+            if uom == "FT":
+                pdf.multi_cell(PG_WDTH-PG_WDTH/8, 7, f"{san(row['ID'])} : {san(row['Description'])}\n"\
+                               f"Dimensions: {length:.2f} {uom}\n"\
+                               f"Next Op: {next_op}", border = 1)
+            else:
+                pdf.multi_cell(PG_WDTH-PG_WDTH/8, 7, f"{san(row['ID'])} : {san(row['Description'])}\n"\
+                               f"Dimensions: {length:.2f} x {width:.2f} "\
+                               f"({(length * width):.2f}) {uom}\n"\
+                               f"Next Op: {next_op}", border = 1)
 
 
 if __name__ == "__main__":
@@ -114,8 +130,11 @@ if __name__ == "__main__":
     laser_df = df[df['op1'] == 'Laser']
     laser_mat_dict = gen_mat_dict(laser_df)
     # waterjet
-    wj_df = df[df['op1'] == 'Sub-Water']
+    wj_df = df[df['op1'] == 'Waterjet']
     wj_mat_dict = gen_mat_dict(wj_df)
+    # sub-water
+    swj_df = df[df['op1'] == 'Sub-Water']
+    swj_mat_dict = gen_mat_dict(swj_df)
 
     pdf = PDF()
     pdf.bom_number = file_path.split('/')[-1].split('.')[0]
@@ -125,6 +144,9 @@ if __name__ == "__main__":
     write_op_pdf(saw_df, saw_mat_dict, "Saw", pdf)
     write_op_pdf(laser_df, laser_mat_dict, "Laser", pdf)
     write_op_pdf(wj_df, wj_mat_dict, "Water Jet", pdf)
+    write_op_pdf(swj_df, swj_mat_dict, "Sub Water Jet", pdf)
 
     pdf.output(f"/users/brendan/Downloads/{pdf.bom_number}-opsheet.pdf", 'F')
     messagebox.showinfo("Create Opsheet", f"Success!\nWrote pdf to \ndownloads/{pdf.bom_number}-opsheet.pdf")
+
+
