@@ -2,6 +2,7 @@ import pandas as pd
 import platform
 from fpdf import FPDF
 from tkinter import filedialog, Tk, messagebox
+from os import getenv
 
 PG_WDTH = 188
 
@@ -158,5 +159,3 @@ if __name__ == "__main__":
         pdf.output(f"/users/brendan/Downloads/{pdf.bom_number}-opsheet.pdf", 'F')
 
     messagebox.showinfo("Create Opsheet", f"Success!\nWrote pdf to \ndownloads/{pdf.bom_number}-opsheet.pdf")
-
-
