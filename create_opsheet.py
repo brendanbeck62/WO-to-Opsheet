@@ -154,7 +154,7 @@ if __name__ == "__main__":
     write_op_pdf(swj_df, swj_mat_dict, "Sub Water", pdf)
 
     if platform.system() == 'Windows':
-        pass
+        pdf.output(f"{getenv('USERPROFILE')}\\downloads\\{pdf.bom_number}-opsheet.pdf", 'F')
     else:
         pdf.output(f"/users/brendan/Downloads/{pdf.bom_number}-opsheet.pdf", 'F')
 
