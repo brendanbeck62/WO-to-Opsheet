@@ -1,4 +1,5 @@
 import pandas as pd
+import platform
 from fpdf import FPDF
 from tkinter import filedialog, Tk, messagebox
 
@@ -151,7 +152,11 @@ if __name__ == "__main__":
     write_op_pdf(wj_df, wj_mat_dict, "Water Jet", pdf)
     write_op_pdf(swj_df, swj_mat_dict, "Sub Water", pdf)
 
-    pdf.output(f"/users/brendan/Downloads/{pdf.bom_number}-opsheet.pdf", 'F')
+    if platform.system() == 'Windows':
+        pass
+    else:
+        pdf.output(f"/users/brendan/Downloads/{pdf.bom_number}-opsheet.pdf", 'F')
+
     messagebox.showinfo("Create Opsheet", f"Success!\nWrote pdf to \ndownloads/{pdf.bom_number}-opsheet.pdf")
 
 
