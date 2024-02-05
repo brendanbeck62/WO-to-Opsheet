@@ -6,3 +6,4 @@ After double clicking, a file browswer will pop up. Navigate to the xlsx file yo
 
 After a second, a popup will appear saying that a pdf file has been written to your downloads. It will match the xlsx's file name, with "-opsheet" appended to the file name.
 
+Source: https://github.com/brendanbeck62/WO-to-Opsheet
