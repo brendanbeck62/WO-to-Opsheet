@@ -1,0 +1,5 @@
+*.xlsx
+build
+dist
+*.spec
+version.txt

@@ -4,6 +4,7 @@ from fpdf import FPDF
 from tkinter import filedialog, Tk, messagebox
 from os import getenv
 
+
 PG_WDTH = 188
 
 pd.set_option('display.max_rows', 500)
