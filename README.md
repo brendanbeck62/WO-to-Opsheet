@@ -27,6 +27,11 @@ It also uses [pyinstaller-versionfile](https://pypi.org/project/pyinstaller-vers
 
 ## Changelog
 
+### 1.2.0
+Mar 10, 2024
+ - [#1](https://github.com/brendanbeck62/WO-to-Opsheet/issues/1) - Fix parent quantity
+ - Add back material table for laser and water jets, fix logic for calculating square feet
+
 ### 1.1.0
 Feb 2, 2024
  - Add material table for saw

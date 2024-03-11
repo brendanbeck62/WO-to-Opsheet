@@ -42,14 +42,17 @@ def gen_mat_dict(df):
         mat_dict (Dict): Material ID: (len, width)
     """
     # Generates a dict of required materials and their amounts
-    # returns Material ID : (len, width)
+    # returns Material ID : (len, width, sqft)
     mat_dict = {}
     for i, row in df.iterrows():
         # saw width is 1.0 in workorder, default to 0 if saw
         len = row['Length'] * row['Qty']
         wid = row['Width'] * row['Qty']
-        old_tup = mat_dict.get(row['Material NO'], (0.0,0.0))
-        mat_dict[row['Material NO']] = (old_tup[0] + len, old_tup[1] + wid)
+
+        sqft = row['Length'] * row['Width'] * row['Qty']
+
+        old_tup = mat_dict.get(row['Material NO'], (0.0, 0.0, 0.0))
+        mat_dict[row['Material NO']] = (old_tup[0] + len, old_tup[1] + wid, old_tup[2] + sqft)
     return mat_dict
 
 def san(string):
@@ -72,11 +75,13 @@ def write_op_pdf(df, mat_dict, op, pdf):
             pdf.cell(PG_WDTH/6, 10, f"{san(mat)}", border = 1, ln = 0)
             pdf.cell(PG_WDTH/2, 10, f"{san(mat_desc)}", border = 1, ln = 0)
             pdf.cell(PG_WDTH/3, 10, f"{dims[0]/12:.2f} {uom}", border = 1, ln = 1)
-        # only give material table for saw, summing the dims and then calculating SF isnt correct
-        #else:
-        #    pdf.cell(PG_WDTH/6, 10, f"{san(mat)}", border = 1, ln = 0)
-        #    pdf.cell(PG_WDTH/2, 10, f"{san(mat_desc)}", border = 1, ln = 0)
-        #    pdf.cell(PG_WDTH/3, 10, f"{dims[0]/12:.2f}x{dims[1]/12:.2f} ({(dims[0]/12)*(dims[1]/12):.2f}) {uom}", border = 1, ln = 1)
+        else:
+            # material table only requires square feet, which should be calculated by
+            # summing the individual part's square feet, rather than summing the
+            #length and width and then calculating the square feet
+            pdf.cell(PG_WDTH/6, 10, f"{san(mat)}", border = 1, ln = 0)
+            pdf.cell(PG_WDTH/2, 10, f"{san(mat_desc)}", border = 1, ln = 0)
+            pdf.cell(PG_WDTH/3, 10, f"{dims[2]/144:.2f} {uom}", border = 1, ln = 1)
 
     # Op table
     for mat in sorted(mat_dict.keys()):
@@ -104,11 +109,11 @@ def write_op_pdf(df, mat_dict, op, pdf):
             # seperate logic for saw (feet) and everythign else (sq feet).
             if uom == "FT":
                 pdf.multi_cell(PG_WDTH-PG_WDTH/8, 7, f"{san(row['ID'])} : {san(row['Description'])}\n"\
-                               f"Dimensions: {length:.2f} {uom}\n"\
+                               f"Dimensions per: {length:.2f} {uom}\n"\
                                f"Next Op: {next_op}", border = 1)
             else:
                 pdf.multi_cell(PG_WDTH-PG_WDTH/8, 7, f"{san(row['ID'])} : {san(row['Description'])}\n"\
-                               f"Dimensions: {length:.2f} x {width:.2f} "\
+                               f"Dimensions per: {length:.2f} x {width:.2f} "\
                                f"({(length * width):.2f}) {uom}\n"\
                                f"Next Op: {next_op}", border = 1)
 
@@ -130,6 +135,27 @@ if __name__ == "__main__":
     )
     df = df[df['Part Type'] == 'Make']
     df = df.drop(columns=['Revision', 'Part Type', 'op4', 'op5', 'Sales Category', 'PROD Line', 'Price ID'])
+
+    # update qty to include parent's qty (recursively)
+    # because 6.2.10 has a qty of 3, but 6.2 has a qty of 2,
+    # 6.2.10's effective qty is 6.
+
+    #Level       ID                  Desc                        Qty
+    #6           9929-06-200         TROUGH ASSEMBLY             1
+    #6.2         9929-06-300         TROUGH WELDMENT             2
+    #6.2.1       650599-18-5040      5" SCH40 x 18" LG. 304SS    1
+    #6.2.10      650598-18-304SS     18'' CROSS RIB, 304SS       3
+    #6.2.11      9929-06-304-LH      STIFFENER ANGLE, LH         1
+    for i, row in df.iterrows():
+        # anything with a '.' is a child
+        if '.' in row['Level']:
+            level = row['Level']
+            child_qty = row['Qty']
+            # rfind gets index of last occurance
+            parent_index = level.rfind('.')
+            parent = level[:parent_index]
+            parent_qty = df[df['Level'] == parent]['Qty']
+            df.at[i,'Qty'] = child_qty * parent_qty
 
     # saw
     saw_df = df[df['op1'] == 'Saw']
@@ -154,6 +180,7 @@ if __name__ == "__main__":
     write_op_pdf(wj_df, wj_mat_dict, "Water Jet", pdf)
     write_op_pdf(swj_df, swj_mat_dict, "Sub Water", pdf)
 
+    # TODO: Save this to the same place the excel file was found, rather than the downloads
     if platform.system() == 'Windows':
         pdf.output(f"{getenv('USERPROFILE')}\\downloads\\{pdf.bom_number}-opsheet.pdf", 'F')
     else:
