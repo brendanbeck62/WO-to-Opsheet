@@ -53,6 +53,7 @@ def gen_mat_dict(df):
 
         old_tup = mat_dict.get(row['Material NO'], (0.0, 0.0, 0.0))
         mat_dict[row['Material NO']] = (old_tup[0] + len, old_tup[1] + wid, old_tup[2] + sqft)
+        #print(f"{row['Level']}:{row['Material NO']}: ({old_tup[0] + len}, {old_tup[1] + wid}, {old_tup[2] + sqft})")
     return mat_dict
 
 def san(string):
@@ -140,7 +141,11 @@ if __name__ == "__main__":
     # because 6.2.10 has a qty of 3, but 6.2 has a qty of 2,
     # 6.2.10's effective qty is 6.
 
+    # Additionally, the first row in the sheet is Level=0, which should act
+    # as the parent for all integer (root level) parts.
+
     #Level       ID                  Desc                        Qty
+    #0           1234-56-100         blah ASSEMBLY               1
     #6           9929-06-200         TROUGH ASSEMBLY             1
     #6.2         9929-06-300         TROUGH WELDMENT             2
     #6.2.1       650599-18-5040      5" SCH40 x 18" LG. 304SS    1
@@ -155,6 +160,14 @@ if __name__ == "__main__":
             parent_index = level.rfind('.')
             parent = level[:parent_index]
             parent_qty = df[df['Level'] == parent]['Qty']
+            #print(f"parent = {df[df['Level'] == parent]}")
+            #print(f"{level}, parent={parent}, parentqty={parent_qty}, childqty={child_qty}")
+            df.at[i,'Qty'] = child_qty * parent_qty
+        elif row['Level'] != '0':
+            # I am a integer, so make my parent be 0
+            level = row['Level']
+            child_qty = row['Qty']
+            parent_qty = df[df['Level'] == '0']['Qty']
             df.at[i,'Qty'] = child_qty * parent_qty
 
     # saw

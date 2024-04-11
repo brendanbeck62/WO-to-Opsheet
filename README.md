@@ -24,8 +24,19 @@ It also uses [pyinstaller-versionfile](https://pypi.org/project/pyinstaller-vers
 [metadata.yml](metadata.yml) contains the default info, and the block in the python file overwrites any defaults.
 
 
+## excel file requirements (modifcations)
+1. Add Level 0 with a quantity (logically maps the ID to the BOM)
+1. Column headers must match exactly the example excel file
+    TODO: Add example excel file
+1. parent must be `Make` if any children are `Make`
+1. Kit that doesn't have material ID cant be one of the 4 op1s (`Saw`, `Laser`, `Waterjet`, `Sub-Water`)
 
 ## Changelog
+
+### 1.3.0
+April 10, 2024
+
+Adds logic for Level 0 quantity affecting all root parts.
 
 ### 1.2.0
 Mar 10, 2024
