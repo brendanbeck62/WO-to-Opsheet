@@ -138,8 +138,8 @@ if __name__ == "__main__":
             converters={
                 'ID': lambda x: str(x).strip(),
                 'Qty': lambda x: int(x),
-                'Length': lambda x: float(x),
-                'Width': lambda x: float(x)
+                #'Length': lambda x: float(x),
+                #'Width': lambda x: float(x)
             },
             dtype = str,
         )
@@ -147,6 +147,9 @@ if __name__ == "__main__":
 
     df = df[df['Part Type'] == 'Make']
     df = df.drop(columns=['Revision', 'Part Type', 'op4', 'op5', 'Sales Category', 'PROD Line', 'Price ID'])
+
+    for col in ['Length', 'Width']:
+        df[col] = pd.to_numeric(df[col], errors='ignore')
 
     # update qty to include parent's qty (recursively)
     # because 6.2.10 has a qty of 3, but 6.2 has a qty of 2,
