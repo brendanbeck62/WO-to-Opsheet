@@ -38,6 +38,11 @@ It also uses [pyinstaller-versionfile](https://pypi.org/project/pyinstaller-vers
 
 ## Changelog
 
+### 1.3.1
+May 16, 2024
+
+Parse Length and Width after dropping !Make type.
+
 ### 1.3.0
 April 10, 2024
 
