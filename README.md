@@ -9,6 +9,11 @@ bom file: 9929-06-100_A.xlsx
 output pdf: 9929-06-100_A-opsheet.pdf
 ```
 
+## Tagging
+1. Commit change `"version x.x.x"`
+1. `git tag vx.x.x`
+1. `git push --tags`
+
 ## Packaging
 Packaged using [pyinstaller](https://pyinstaller.org/en/stable/index.html), ends up in `dist/create_opsheet`.
 

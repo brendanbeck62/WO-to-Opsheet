@@ -3,7 +3,7 @@ import platform
 from fpdf import FPDF
 from tkinter import filedialog, Tk, messagebox
 from os import getenv
-
+import argparse 
 
 PG_WDTH = 188
 
@@ -32,6 +32,12 @@ class PDF(FPDF):
 
     def set_title(self, op_string):
         self.op_title = op_string
+
+def get_args():
+    parser = argparse.ArgumentParser(description="Convert Solidworks WOs to Opsheet PDFs")
+    parser.add_argument('--debug', nargs='?', const=1, type=int, help="set debug level")
+    parser.add_argument('-i', '--infile', help="optional in file for debugging")
+    return parser.parse_args()
 
 def gen_mat_dict(df):
     """Generates a dict of required materials and their amounts
@@ -120,9 +126,13 @@ def write_op_pdf(df, mat_dict, op, pdf):
 
 
 if __name__ == "__main__":
+
+    args = get_args()
+
     root = Tk()
     root.withdraw()
-    file_path = filedialog.askopenfilename()
+
+    file_path = args.infile if args.infile else filedialog.askopenfilename()
 
     df = pd.DataFrame(pd.read_excel(file_path,
             converters={
@@ -134,6 +144,7 @@ if __name__ == "__main__":
             dtype = str,
         )
     )
+
     df = df[df['Part Type'] == 'Make']
     df = df.drop(columns=['Revision', 'Part Type', 'op4', 'op5', 'Sales Category', 'PROD Line', 'Price ID'])
 
