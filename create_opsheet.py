@@ -133,6 +133,7 @@ if __name__ == "__main__":
     root.withdraw()
 
     file_path = args.infile if args.infile else filedialog.askopenfilename()
+    if args.debug >=1: print(f"MAIN: file_path = {file_path}")
 
     df = pd.DataFrame(pd.read_excel(file_path,
             converters={
@@ -149,7 +150,9 @@ if __name__ == "__main__":
     df = df.drop(columns=['Revision', 'Part Type', 'op4', 'op5', 'Sales Category', 'PROD Line', 'Price ID'])
 
     for col in ['Length', 'Width']:
+        if args.debug >=2: print(f"MAIN: col = {col}")
         df[col] = pd.to_numeric(df[col], errors='ignore')
+    if args.debug >=1: print(f"MAIN: converted Length and Width to numeric")
 
     # update qty to include parent's qty (recursively)
     # because 6.2.10 has a qty of 3, but 6.2 has a qty of 2,
@@ -165,17 +168,23 @@ if __name__ == "__main__":
     #6.2.1       650599-18-5040      5" SCH40 x 18" LG. 304SS    1
     #6.2.10      650598-18-304SS     18'' CROSS RIB, 304SS       3
     #6.2.11      9929-06-304-LH      STIFFENER ANGLE, LH         1
+    if args.debug >= 1: print()
     for i, row in df.iterrows():
         # anything with a '.' is a child
+        if args.debug >=2: print(f"MAIN: row = {row['Level']}")
         if '.' in row['Level']:
             level = row['Level']
             child_qty = row['Qty']
             # rfind gets index of last occurance
             parent_index = level.rfind('.')
             parent = level[:parent_index]
+
+            if df[df['Level'] == parent].empty:
+                raise Exception(f"Parent with level: {parent} either does not exist or is not a Make part")
+            if args.debug >=2: print(f"\tparent = {df[df['Level'] == parent].to_string(index=False)}")
             parent_qty = df[df['Level'] == parent]['Qty']
-            #print(f"parent = {df[df['Level'] == parent]}")
-            #print(f"{level}, parent={parent}, parentqty={parent_qty}, childqty={child_qty}")
+
+            if args.debug >=2: print(f"\t{level}, parent={parent}, parentqty={parent_qty}, childqty={child_qty}")
             df.at[i,'Qty'] = child_qty * parent_qty
         elif row['Level'] != '0':
             # I am a integer, so make my parent be 0
@@ -183,6 +192,8 @@ if __name__ == "__main__":
             child_qty = row['Qty']
             parent_qty = df[df['Level'] == '0']['Qty']
             df.at[i,'Qty'] = child_qty * parent_qty
+
+    print("MAIN: Parents set successfully")
 
     # saw
     saw_df = df[df['op1'] == 'Saw']
