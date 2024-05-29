@@ -35,6 +35,7 @@ It also uses [pyinstaller-versionfile](https://pypi.org/project/pyinstaller-vers
     TODO: Add example excel file
 1. parent must be `Make` if any children are `Make`
 1. Kit that doesn't have material ID cant be one of the 4 op1s (`Saw`, `Laser`, `Waterjet`, `Sub-Water`)
+1. Any child (ex. 7.1.3) assumes it has a chain of parents back to the parent (ex. 7.1, 7), and then 7's parent will always be 0.
 
 ## Changelog
 
